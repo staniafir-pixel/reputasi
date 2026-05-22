@@ -1,0 +1,23 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Inertia\Inertia;
+use App\Models\Module;
+use App\Models\Article;
+use Illuminate\Support\Facades\Auth;
+
+class DashboardController extends Controller
+{
+    public function index()
+    {
+        $user = Auth::user();
+
+        return Inertia::render('Dashboard', [
+            'modules' => Module::withCount('lessons')->get(),
+            'latestArticles' => Article::with('author')->latest('published_at')->take(3)->get(),
+            'streakCount' => $user->streak_count,
+            'progress' => $user->progress()->with('module')->get(),
+        ]);
+    }
+}
