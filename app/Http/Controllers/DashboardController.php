@@ -17,7 +17,12 @@ class DashboardController extends Controller
             'modules' => Module::withCount('lessons')->get(),
             'latestArticles' => Article::with('author')->latest('published_at')->take(3)->get(),
             'streakCount' => $user->streak_count,
-            'progress' => $user->progress()->with('module')->get(),
+            'progress' => $user->progress()
+                ->where('completed', true)
+                ->selectRaw('module_id, count(*) as completed_count')
+                ->groupBy('module_id')
+                ->get()
+                ->mapWithKeys(fn($item) => [$item->module_id => (int) $item->completed_count]),
         ]);
     }
 }
